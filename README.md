@@ -1,6 +1,7 @@
 # Auto Crop Background
 
 Secara ototmatis memotong background gambar dengan presisi yang baik, bahkan rambut. Menggunakan model DeepLabv3+.
+(1.30 jam, dengan error)
 
 ## Requirements
 
