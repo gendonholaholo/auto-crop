@@ -17,5 +17,5 @@ Secara ototmatis memotong background gambar dengan presisis baik, bahkan rambut 
 1. Clone the repository:
    ```powershell
    git clone https://github.com/gendonholaholo/auto-crop.git
-   cd auto-crop-background
+   cd auto-crop
 
