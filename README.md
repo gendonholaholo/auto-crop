@@ -6,6 +6,7 @@ Secara ototmatis memotong background gambar dengan presisis baik, bahkan rambut 
 
 - Python 3.7+
 - TensorFlow 2.x
+- TensorFlow Hub
 - OpenCV
 - NumPy
 - Matplotlib
@@ -14,6 +15,7 @@ Secara ototmatis memotong background gambar dengan presisis baik, bahkan rambut 
 ## Installation
 
 1. Clone the repository:
-   ```PowerShell
+   ```powershell
+   git clone https://github.com/gendonholaholo/auto-crop.git
    cd auto-crop-background
 
