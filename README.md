@@ -6,6 +6,9 @@ Secara ototmatis memotong background gambar dengan presisi yang baik, bahkan ram
 ## Requirements
 
 - Python 3.7+
+- Torch
+- Torchvision
+- Python 3.7+
 - TensorFlow 2.x
 - TensorFlow Hub
 - OpenCV
