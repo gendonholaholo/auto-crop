@@ -1,30 +1,34 @@
 import argparse
-import tensorflow as tf
+import torch
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from utils import load_image, preprocess_image 
+from utils import load_image, preprocess_image  
+import torchvision.models.segmentation as models
 
-def load_deeplabv3_model_from_tflite(model_path="models/1/1.tflite"):
-    interpreter = tf.lite.Interpreter(model_path=model_path)
-    interpreter.allocate_tensors()
-    return interpreter
-
-def segment_image(interpreter, image):
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
-
-    input_index = input_details[0]['index']
-    image_resized = cv2.resize(image, (513, 513))
-    image_normalized = image_resized / 255.0  
-    input_data = np.expand_dims(image_normalized, axis=0).astype(np.float32)
-
-    interpreter.set_tensor(input_index, input_data)
-    interpreter.invoke()
-
-    output_data = interpreter.get_tensor(output_details[0]['index'])
-    segmentation_mask = output_data[0]
+def load_deeplabv3_model(model_path="models/model.pth"):
+    model = models.deeplabv3_resnet101(pretrained=False)
     
+    state_dict = torch.load(model_path, map_location=torch.device('cpu'))
+    
+    model.load_state_dict(state_dict)
+    
+    model.eval()  
+    return model
+
+def segment_image(model, image):
+    input_image = preprocess_image(image, target_size=(513, 513))
+    
+    input_tensor = torch.from_numpy(input_image).float().unsqueeze(0)
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    input_tensor = input_tensor.to(device)
+    
+    with torch.no_grad():  
+        output = model(input_tensor)['out'][0]
+    
+    segmentation_mask = output.argmax(0).cpu().numpy()  
     return segmentation_mask
 
 def auto_crop(image, mask):
@@ -43,19 +47,18 @@ def save_output(cropped_image, output_path="output/cropped_image.jpg"):
     cv2.imwrite(output_path, cv2.cvtColor(cropped_image, cv2.COLOR_RGB2BGR))
 
 def main(image_path):
-    model_path = "models/1/1.tflite"  # Path ke model TFLite lokal
-    interpreter = load_deeplabv3_model_from_tflite(model_path)
+    model_path = "models/model.pth"  
+    model = load_deeplabv3_model(model_path)
 
     image = load_image(image_path)  
-    image = preprocess_image(image) 
-
-    mask = segment_image(interpreter, image)
+    mask = segment_image(model, image)
+    
     cropped_image = auto_crop(image, mask)
     save_output(cropped_image)
     plot_image(cropped_image)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Auto crop background using DeepLabV3+ TFLite")
+    parser = argparse.ArgumentParser(description="Auto crop background using DeepLabV3 model in PyTorch")
     parser.add_argument("--image_path", type=str, required=True, help="Path to the image file")
     args = parser.parse_args()
     main(args.image_path)
